@@ -2,28 +2,29 @@
 #include "aes_cbc.hpp"
 #include "aes_ecb.hpp"
 #include "aes_gcm.hpp"
-#include "ec_algo.hpp"
-#include "ec_dsa.hpp"
+#include "ec_algorithm.hpp"
+#include "ec_digital_signature.hpp"
 #include "rsa_algorithm.hpp"
+#include "rsa_digital_signature.hpp"
 
-int chooseAlgorithm();
-int chooseKeySize(int);
-void run_algorithm(int, int);
+int ChooseAlgorithm();
+int ChooseKeySize(int);
+void RunAlgorithm(int, int);
 
 
 int main() {
 
     //choose algorithm to run 
-    int userChoice = chooseAlgorithm();
+    int user_choice = ChooseAlgorithm();
 
-    if(userChoice >= 1 && userChoice <= 6) {
+    if(user_choice >= 1 && user_choice <= 7) {
 
         //choose Key Size
-        int keySize = chooseKeySize(userChoice);
-        if(keySize != 0 || keySize == 1) {
+        int keysize = ChooseKeySize(user_choice);
+        if(keysize != 0 || keysize == 1) {
 
             //run the specified algorithm with key size.
-            run_algorithm(userChoice, keySize);
+            RunAlgorithm(user_choice, keysize);
         } else {
             std::cout << "Invalid key size for the algorithm to execute.\n";
         }
@@ -32,7 +33,7 @@ int main() {
     }
 }
 
-int chooseAlgorithm() {
+int ChooseAlgorithm() {
 
     int input;
     std::cout << "Choose algorithm to run : \n";
@@ -43,31 +44,32 @@ int chooseAlgorithm() {
     std::cout << "4. RSA \n";
     std::cout << "5. Elliptic Curve \n";
     std::cout << "6. DSA using Elliptic curve \n";
+    std::cout << "7. DSA using RSA algorithm.\n";
 
     std::cin >> input;
     return input;
 }
 
-int chooseKeySize(int userChoice) {
+int ChooseKeySize(int user_choice) {
 
     std::cout << "choose key size :\n";
-    int keySize;
+    int keysize;
 
-    if(userChoice == 1 || userChoice == 2 || userChoice == 3) {
+    if(user_choice == 1 || user_choice == 2 || user_choice == 3) {
 
         std::cout << "KEY SIZE : 16, 24, 32 bytes. \n";
-        std::cin >> keySize;
-        if(keySize == 16 || keySize == 24 || keySize == 32)
-        return keySize;
+        std::cin >> keysize;
+        if(keysize == 16 || keysize == 24 || keysize == 32)
+        return keysize;
 
-    } else if(userChoice == 4) {
+    } else if(user_choice == 4 || user_choice == 7) {
 
-        std::cout << "KEY SIZE : 1024, 2048, 4096 bits. \n";
-        std::cin >> keySize;
-        if(keySize == 1024 || keySize == 2048 || keySize == 4096)
-        return keySize;
+        std::cout << "KEY SIZE : 128, 256, 512 bytes. \n";
+        std::cin >> keysize;
+        if(keysize == 128 || keysize == 256 || keysize == 512)
+        return keysize;
        
-    } else if(userChoice == 5 || userChoice == 6) {
+    } else if(user_choice == 5 || user_choice == 6) {
 
         std::cout << "KEY SIZE will be based on Elliptic Curve used in the algorithm. \n\n";
         return 1;
@@ -75,57 +77,63 @@ int chooseKeySize(int userChoice) {
     } else {
         std::cout << " Sorry! Invalid input for key size.\n";
     }
-    std::cout << " final 0.";
+
     return 0;
 }
 
-void run_algorithm(int userChoice, int keySize) {
+void RunAlgorithm(int user_choice, int keysize) {
 
-
-    if(userChoice == 1) {
+    std::cout << std::endl;
+    if(user_choice == 1) {
 
         std::cout << "Running AES in cbc mode : \n";
-        AEScbc* aes_cbc = new AEScbc();
-        aes_cbc->run_aes_cbc_algorithm(keySize);
+        AESCbcAlgorithm* aes_cbc = new AESCbcAlgorithm();
+        aes_cbc->RunAESCbcAlgorithm(keysize);
         delete aes_cbc;
 
-    } else if(userChoice == 2) {
+    } else if(user_choice == 2) {
 
         std::cout << "Running AES in ecb mode : \n";
-        AESecb* aes_ecb = new AESecb();
-        aes_ecb->run_aes_ecb_algorithm(keySize);
+        AESEcbAlgorithm* aes_ecb = new AESEcbAlgorithm();
+        aes_ecb->RunAESEcbAlgorithm(keysize);
         delete aes_ecb;
 
-    } else if(userChoice == 3) {
+    } else if(user_choice == 3) {
 
         std::cout << "Running AES in gcm mode : \n";
-        AESgcm* aes_gcm = new AESgcm();
-        aes_gcm->run_aes_gcm_algorithm(keySize);
+        AESGcmAlgorithm* aes_gcm = new AESGcmAlgorithm();
+        aes_gcm->RunAESGcmAlgorithm(keysize);
         delete aes_gcm;
  
-    } else if(userChoice == 4) {
+    } else if(user_choice == 4) {
 
         std::cout << "Running RSA algorithm : \n";
-        RSAalgorithm* rsa = new RSAalgorithm();
-        rsa->run_rsa_algorithm(keySize);
+        RSAAlgorithm* rsa = new RSAAlgorithm();
+        rsa->RunRSAAlgorithm(keysize);
         delete rsa;
 
-    } else if(userChoice == 5) {
+    } else if(user_choice == 5) {
 
         std::cout << "Running EC algorithm : \n";
         ECAlgorithm* ec = new ECAlgorithm();
-        ec->run_ec_algorithm();
+        ec->RunECAlgorithm();
         delete ec;
 
-    } else if(userChoice == 6) {
+    } else if(user_choice == 6) {
 
         std::cout << "Running EC DSA algorithm : \n";
-        ECDSAlgorithm* ecdsa = new ECDSAlgorithm();
-        ecdsa->run_ec_dsa_algorithm();
+        ECDigitalSignature* ecdsa = new ECDigitalSignature();
+        ecdsa->RunECDSA();
         delete ecdsa;
 
-    } 
-    else {
+    } else if (user_choice == 7) {
+
+        std::cout << "Running DSA using RSA algorithm : \n";
+        RSADigitalSignature* rsa_dsa = new RSADigitalSignature();
+        rsa_dsa->RunRSADigitalSignature(keysize);
+        delete rsa_dsa;
+
+    } else {
         std::cout << " Sorry! Invalid input.\n";
     }
 }
