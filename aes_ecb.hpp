@@ -1,17 +1,16 @@
 #ifndef AES_ECB_HPP
 #define AES_ECB_HPP
 
-#include <cstring>
 
-class AESecb {
+class AESEcbAlgorithm {
 
     public:
-    void run_aes_ecb_algorithm(int);
+    void RunAESEcbAlgorithm(int);
 
     private:
-    void generate_aes_ecb_key(unsigned char*, int);
-    void aes_ecb_encrypt(const unsigned char*, const unsigned char*, unsigned char*, size_t);
-    void aes_ecb_decrypt(const unsigned char*, const unsigned char*, unsigned char*, size_t);
+    void GenerateAESEcbKey(unsigned char*, int);
+    void EncryptAESEcbMode(const unsigned char*, const unsigned char*, unsigned char*, size_t);
+    void DecryptAESEcbMode(const unsigned char*, const unsigned char*, unsigned char*, size_t);
 
 };
 
