@@ -1,7 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-void printCipherText(unsigned char*, int);
+void PrintCipherText(unsigned char*, int);
 
 #endif
 

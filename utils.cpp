@@ -2,10 +2,10 @@
 #include <iostream>
 #include "utils.hpp"
 
-void printCipherText(unsigned char *cipherText, int cipherText_len) {
+void PrintCipherText(unsigned char *ciphertext, int ciphertext_len) {
     
-    for (size_t i = 0; i < cipherText_len; ++i) {
-        printf("%02X ", cipherText[i]);
+    for (size_t i = 0; i < ciphertext_len; ++i) {
+        printf("%02X ", ciphertext[i]);
     } 
    
     std::cout << std::endl;
