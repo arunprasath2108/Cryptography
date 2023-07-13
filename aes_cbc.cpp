@@ -7,10 +7,10 @@
 using namespace std;
 
 
-void AEScbc::run_aes_cbc_algorithm(int keySize) {
-
-    unsigned char key[keySize];
-    generate_aes_cbc_key(key, keySize);
+void AESCbcAlgorithm::RunAESCbcAlgorithm(int keysize) {
+  
+    unsigned char key[keysize];
+    GenerateAESCbcKey(key, keysize);
 
     unsigned char iv[EVP_MAX_IV_LENGTH];
     if (RAND_bytes(iv, EVP_MAX_IV_LENGTH) != 1) {
@@ -21,28 +21,27 @@ void AEScbc::run_aes_cbc_algorithm(int keySize) {
     unsigned char plaintext[] = "This is the message.";
     int plaintext_len = sizeof(plaintext);
 
-    vector<unsigned char> cipherText;
-    encrypt_aes_cbc_mode(plaintext, plaintext_len, key, iv, cipherText);
-
+    vector<unsigned char> ciphertext;
+    EncryptAESCbcMode(plaintext, plaintext_len, key, iv, ciphertext);
+    cout << "\nPlaintext : " << plaintext << endl;
     cout << "Ciphertext: ";
-    printCipherText(cipherText.data(), cipherText.size());
+    PrintCipherText(ciphertext.data(), ciphertext.size());
 
-    vector<unsigned char> decryptedText;
-    decrypt_aes_cbc_mode(cipherText, key, iv, decryptedText);
+    vector<unsigned char> decrypted_text;
+    DecryptAESCbcMode(ciphertext, key, iv, decrypted_text);
 
-    cout << "Decrypted Text: " << decryptedText.data() << endl;
-
+    cout << "Decrypted Text: " << decrypted_text.data() << endl;
 }
 
-void AEScbc::generate_aes_cbc_key(unsigned char* key, int KEY_SIZE) {
+void AESCbcAlgorithm::GenerateAESCbcKey(unsigned char* key, int keysize) {
 
-    if (RAND_bytes(key, KEY_SIZE) != 1) {
+    if (RAND_bytes(key, keysize) != 1) {
         cout << "Error in generating AES key." << endl;
         return;
     }
 }
 
-void AEScbc::encrypt_aes_cbc_mode(const unsigned char* plainText, int plaintext_len, const unsigned char* key, const unsigned char* iv, vector<unsigned char>& cipherText) {
+void AESCbcAlgorithm::EncryptAESCbcMode(const unsigned char* plaintext, int plaintext_len, const unsigned char* key, const unsigned char* iv, vector<unsigned char>& ciphertext) {
     
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
@@ -52,29 +51,33 @@ void AEScbc::encrypt_aes_cbc_mode(const unsigned char* plainText, int plaintext_
 
     if (EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1) {
         cout << "Error in initializing encryption." << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return;
     }
 
-    int outLen = 0;
-    int cipherTextLen = 0;
-    cipherText.resize(plaintext_len + EVP_CIPHER_CTX_block_size(ctx));
+    int out_len = 0;
+    int ciphertext_len = 0;
+    ciphertext.resize(plaintext_len + EVP_CIPHER_CTX_block_size(ctx));
 
-    if (EVP_EncryptUpdate(ctx, &cipherText[0], &outLen, plainText, plaintext_len) != 1) {
+    if (EVP_EncryptUpdate(ctx, &ciphertext[0], &out_len, plaintext, plaintext_len) != 1) {
         cout << "Error in encrypting data." << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return;
     }
-    cipherTextLen += outLen;
+    ciphertext_len += out_len;
 
-    if (EVP_EncryptFinal_ex(ctx, &cipherText[cipherTextLen], &outLen) != 1) {
+    if (EVP_EncryptFinal_ex(ctx, &ciphertext[ciphertext_len], &out_len) != 1) {
         cout << "Error in finalizing encryption." << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return;
     }
-    cipherTextLen += outLen;
+    ciphertext_len += out_len;
 
-    cipherText.resize(cipherTextLen);
+    ciphertext.resize(ciphertext_len);
+    EVP_CIPHER_CTX_free(ctx);
 }
 
-void AEScbc::decrypt_aes_cbc_mode(const vector<unsigned char>& cipherText, const unsigned char* key, const unsigned char* iv, vector<unsigned char>& decryptedText) {
+void AESCbcAlgorithm::DecryptAESCbcMode(const vector<unsigned char>& ciphertext, const unsigned char* key, const unsigned char* iv, vector<unsigned char>& decrypted_text) {
    
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
@@ -84,24 +87,28 @@ void AEScbc::decrypt_aes_cbc_mode(const vector<unsigned char>& cipherText, const
 
     if (EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv) != 1) {
         cout << "Error in initializing decryption." << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return;
     }
 
-    int outLen = 0;
-    int decryptedTextLen = 0;
-    decryptedText.resize(cipherText.size());
+    int out_len = 0;
+    int decryptedtext_len = 0;
+    decrypted_text.resize(ciphertext.size());
 
-    if (EVP_DecryptUpdate(ctx, &decryptedText[0], &outLen, &cipherText[0], cipherText.size()) != 1) {
+    if (EVP_DecryptUpdate(ctx, &decrypted_text[0], &out_len, &ciphertext[0], ciphertext.size()) != 1) {
         cout << "Error in decrypting data." << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return;
     }
-    decryptedTextLen += outLen;
+    decryptedtext_len += out_len;
 
-    if (EVP_DecryptFinal_ex(ctx, &decryptedText[decryptedTextLen], &outLen) != 1) {
+    if (EVP_DecryptFinal_ex(ctx, &decrypted_text[decryptedtext_len], &out_len) != 1) {
         cout << "Error in finalizing decryption." << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return;
     }
-    decryptedTextLen += outLen;
+    decryptedtext_len += out_len;
 
-    decryptedText.resize(decryptedTextLen);
+    decrypted_text.resize(decryptedtext_len);
+    EVP_CIPHER_CTX_free(ctx);
 }
