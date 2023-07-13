@@ -1,16 +1,16 @@
 #ifndef RSA_HPP
 #define RSA_HPP
-
 #include <openssl/evp.h>
 
-class RSAalgorithm {
+class RSAAlgorithm {
 
     public:
-    void run_rsa_algorithm(int);
-
+    void RunRSAAlgorithm(int);
+ 
     private:
-    void encryptRSA(EVP_PKEY*, unsigned char**, size_t*, unsigned char*, size_t);
-    void decryptRSA(EVP_PKEY*, unsigned char**, size_t*, unsigned char*, size_t);
+    EVP_PKEY* GenerateRSAKeypair(int);
+    void EncryptRSA(EVP_PKEY*, unsigned char**, size_t*, unsigned char*, size_t);
+    void DecryptRSA(EVP_PKEY*, unsigned char**, size_t*, unsigned char*, size_t);
         
 };
 

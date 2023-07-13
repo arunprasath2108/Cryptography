@@ -5,40 +5,74 @@
 #include "rsa_algorithm.hpp"
 
  
-void RSAalgorithm::run_rsa_algorithm(int keySize) {
+void RSAAlgorithm::RunRSAAlgorithm(int keysize) {
 
-    unsigned char *cipher_text = NULL, *plain_text = NULL;
-    size_t cipherText_len, plainText_len;
+    unsigned char *ciphertext = NULL, *plaintext = NULL;
+    size_t ciphertext_len, plaintext_len;
     unsigned char input[] = "This is the message.";
     size_t input_len = sizeof(input);
 
     //key generation
-    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
-    EVP_PKEY* key = NULL;
-    EVP_PKEY_keygen_init(ctx);
-    EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, keySize);
-    EVP_PKEY_keygen(ctx, &key); 
+    EVP_PKEY* rsa_keypair = GenerateRSAKeypair(keysize);
  
-    std::cout << "Plain text: " << input << "\n";
+    std::cout << "\nPlain text: " << input << "\n";
     //encrypt
-    cipher_text = new unsigned char[EVP_PKEY_size(key)];
-    encryptRSA(key, &cipher_text, &cipherText_len, input, input_len);
-
-    printCipherText(cipher_text, cipherText_len);
+    ciphertext = new unsigned char[EVP_PKEY_size(rsa_keypair)];
+    EncryptRSA(rsa_keypair, &ciphertext, &ciphertext_len, input, input_len);
+    std::cout << "Cipher text : ";
+    PrintCipherText(ciphertext, ciphertext_len);
     
     //decrypt
-    int size = EVP_PKEY_get_size(key);
-    plain_text = new unsigned char[size];
+    int size = EVP_PKEY_get_size(rsa_keypair);
+    plaintext = new unsigned char[size];
 
-    decryptRSA(key, &plain_text, &plainText_len, cipher_text, cipherText_len);
+    DecryptRSA(rsa_keypair, &plaintext, &plaintext_len, ciphertext, ciphertext_len);
 
-    std::cout << "\nDecrypted data: " << plain_text << "\n";
-
-    delete[] cipher_text;
-    delete[] plain_text;
+    std::cout << "Decrypted data: " << plaintext << "\n";
+ 
+    delete[] ciphertext;
+    delete[] plaintext;
+    EVP_PKEY_free(rsa_keypair);
 }
 
-void RSAalgorithm::encryptRSA(EVP_PKEY* key, unsigned char** cipherText, size_t* cipherText_len, unsigned char* plainText, size_t plainText_len) {
+EVP_PKEY* RSAAlgorithm::GenerateRSAKeypair(int keysize) {
+
+    int keysize_in_bits = keysize * 8;
+    EVP_PKEY* rsa_keypair = NULL;
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+
+    if (ctx == NULL)
+    {
+        std::cout << "error in ctx.\n";
+        return NULL;
+    }
+
+    if (EVP_PKEY_keygen_init(ctx) <= 0)
+    {
+        std::cout << "error in init of keygen.\n";
+        EVP_PKEY_CTX_free(ctx);
+        return NULL;
+    }
+
+    if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, keysize_in_bits) <= 0)
+    {
+        std::cout << "error in setting key param.\n";
+        EVP_PKEY_CTX_free(ctx);
+        return NULL;
+    }
+
+    if (EVP_PKEY_keygen(ctx, &rsa_keypair) <= 0)
+    {
+        std::cout << "error in generating key.\n";
+        EVP_PKEY_CTX_free(ctx);
+        return NULL;
+    }
+
+    EVP_PKEY_CTX_free(ctx);
+    return rsa_keypair;
+}
+
+void RSAAlgorithm::EncryptRSA(EVP_PKEY* key, unsigned char** ciphertext, size_t* ciphertext_len, unsigned char* plaintext, size_t plaintext_len) {
 
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(key, NULL);
     if(!ctx) {
@@ -54,14 +88,15 @@ void RSAalgorithm::encryptRSA(EVP_PKEY* key, unsigned char** cipherText, size_t*
     }
 
     //encrypt plain text
-    if(EVP_PKEY_encrypt(ctx, *cipherText, cipherText_len, plainText, plainText_len) <= 0) {
+    if(EVP_PKEY_encrypt(ctx, *ciphertext, ciphertext_len, plaintext, plaintext_len) <= 0) {
         std::cerr << "Encryption failed." << std::endl;
         EVP_PKEY_CTX_free(ctx);
         return;
     }
+    EVP_PKEY_CTX_free(ctx);
 }
 
-void RSAalgorithm::decryptRSA(EVP_PKEY* key, unsigned char** plainText, size_t* plainText_len, unsigned char* cipherText, size_t cipherText_len) {
+void RSAAlgorithm::DecryptRSA(EVP_PKEY* key, unsigned char** plaintext, size_t* plaintext_len, unsigned char* ciphertext, size_t ciphertext_len) {
 
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(key, NULL);
     if(!ctx) {
@@ -77,15 +112,16 @@ void RSAalgorithm::decryptRSA(EVP_PKEY* key, unsigned char** plainText, size_t* 
     }
 
     // decrypt cipher text
-    if(EVP_PKEY_decrypt(ctx, NULL, plainText_len, cipherText, cipherText_len) <= 0) {
+    if(EVP_PKEY_decrypt(ctx, NULL, plaintext_len, ciphertext, ciphertext_len) <= 0) {
         std::cerr << "Failed to determine buffer length." << std::endl;
         EVP_PKEY_CTX_free(ctx);
         return;
     }
 
-    if(EVP_PKEY_decrypt(ctx, *plainText, plainText_len, cipherText, cipherText_len) <= 0) {
+    if(EVP_PKEY_decrypt(ctx, *plaintext, plaintext_len, ciphertext, ciphertext_len) <= 0) {
         std::cerr << "Decryption failed." << std::endl;
         EVP_PKEY_CTX_free(ctx);
         return;
     }
+    EVP_PKEY_CTX_free(ctx);
 }
